@@ -35,46 +35,50 @@ impl Stripe {
 macro_rules! flags {
     (
         $(
-            $key:ident => [
-                $( ($color:expr, $ansi:expr) ),* $(,)?
+            $key:ident $(|)? $( $alt:ident )|* => [
+                $( ($color:expr, $ansi:expr) ),+ $(,)?
             ]
         ),* $(,)?
     ) => {
-        impl Flag {
-            $(
-                #[inline]
-                pub fn $key() -> Self {
-                    Self {
-                        stripes: vec![
-                            $( Stripe::new($color, $ansi) ),*
-                        ]
-                    }
-                }
-            )*
-            pub fn by_name(name: &str) -> Option<Self> {
-                match name {
+        use std::str::FromStr;
+
+        #[derive(Clone, Copy)]
+        pub enum Flag {
+            $($key,)*
+        }
+
+        impl FromStr for Flag {
+            type Err = ();
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                let mut c = s.chars();
+                let f = c.next().ok_or(())?;
+                let serialized = f.to_uppercase().collect::<String>() + c.as_str();
+                match serialized.as_str() {
                     $(
-                        stringify!($key) => Some(Self::$key()),
+                        stringify!($key) $( | stringify!($alt) )* => Ok(Self::$key),
                     )*
-                    _ => None
+                    _ => Err(())
+                }
+            }
+        }
+
+        impl Flag {
+            #[inline]
+            pub fn stripes(&self) -> Vec<Stripe> {
+                match self {
+                    $(
+                        Self::$key => vec![
+                            $( Stripe::new($color, $ansi) ),*
+                        ],
+                    )*
                 }
             }
         }
     };
 }
 
-pub struct Flag {
-    pub stripes: Vec<Stripe>,
-}
-
-impl Flag {
-    pub fn new(stripes: Vec<Stripe>) -> Self {
-        Self { stripes }
-    }
-}
-
 flags! {
-    lgbt => [
+    Lgbt => [
         (Color::new(228, 3, 3), AnsiColor::Red),
         (Color::new(255, 140, 0), AnsiColor::Red),
         (Color::new(255, 237, 0), AnsiColor::Yellow),
@@ -82,41 +86,48 @@ flags! {
         (Color::new(0, 77, 255), AnsiColor::Blue),
         (Color::new(117, 7, 135), AnsiColor::Magenta)
     ],
-    bisexual => [
+    Bisexual | Bi => [
         (Color::new(214, 2, 122), AnsiColor::Magenta),
         (Color::new(214, 2, 122), AnsiColor::Magenta),
         (Color::new(155, 79, 150), AnsiColor::Magenta),
         (Color::new(0, 56, 168), AnsiColor::Blue),
         (Color::new(0, 56, 168), AnsiColor::Blue),
     ],
-    polysexual => [
+    Polysexual | Poly => [
         (Color::new(246, 28, 185), AnsiColor::Magenta),
         (Color::new(7, 218, 105), AnsiColor::Green),
         (Color::new(28, 146, 246), AnsiColor::Cyan),
     ],
-    pansexual => [
+    Pansexual | Pan => [
         (Color::new(255, 33, 140), AnsiColor::Magenta),
         (Color::new(255, 216, 0), AnsiColor::Yellow),
         (Color::new(33, 177, 255), AnsiColor::Cyan),
     ],
-    asexual => [
+    Asexual | Ace => [
         (Color::BLACK, AnsiColor::Black),
         (Color::new(163, 163, 163), AnsiColor::Black),
         (Color::WHITE, AnsiColor::White),
         (Color::new(128, 0, 128), AnsiColor::Magenta),
     ],
-    aromantic => [
+    Aromantic | Aro => [
         (Color::new(62, 167,68), AnsiColor::Green),
         (Color::new(169, 212, 120), AnsiColor::Green),
         (Color::WHITE, AnsiColor::White),
         (Color::gray(170), AnsiColor::Black),
         (Color::BLACK, AnsiColor::Black),
     ],
-    lesbian => [
+    Lesbian => [
         (Color::new(214, 44,0), AnsiColor::Red),
         (Color::new(255, 153, 86), AnsiColor::Red),
         (Color::WHITE, AnsiColor::White),
         (Color::new(211, 98,164), AnsiColor::Magenta),
         (Color::new(164, 1, 98), AnsiColor::Magenta),
     ],
+    Trans => [
+        (Color::new(115, 207, 244), AnsiColor::Cyan),
+        (Color::new(238, 175, 192), AnsiColor::Magenta),
+        (Color::WHITE, AnsiColor::White),
+        (Color::new(238, 175, 192), AnsiColor::Magenta),
+        (Color::new(115, 207, 244), AnsiColor::Cyan),
+    ]
 }
