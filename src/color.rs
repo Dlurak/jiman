@@ -1,5 +1,6 @@
 pub const RESET: &str = "\x1b[0m";
 
+#[derive(Clone, Copy)]
 pub struct Color(u8, u8, u8);
 
 pub trait AnsiCode {

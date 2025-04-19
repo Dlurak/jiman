@@ -22,6 +22,8 @@ pub struct PrintCli {
     pub width: Option<Size>,
     #[arg(long, value_parser = parse_width)]
     pub height: Option<Size>,
+    #[arg(long, alias = "angle", default_value_t = unsafe{ NonZero::new_unchecked(1) })]
+    pub triangle_angle: NonZero<usize>,
 }
 
 #[derive(Parser)]
