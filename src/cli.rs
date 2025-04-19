@@ -1,18 +1,33 @@
 use crate::flag::Flag;
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use std::{
     num::{IntErrorKind, NonZero},
     str::FromStr,
 };
 
-#[derive(Parser)]
-pub struct Cli {
+#[derive(Subcommand, Clone)]
+pub enum Command {
+    Print(PrintCli),
+    List {
+        #[arg(long, default_value_t = false)]
+        aliases: bool,
+    },
+}
+
+#[derive(Parser, Clone)]
+pub struct PrintCli {
     #[arg(value_parser = parse_flag)]
     pub flag: Flag,
     #[arg(short, long, value_parser = parse_width)]
     pub width: Option<Size>,
     #[arg(long, value_parser = parse_width)]
     pub height: Option<Size>,
+}
+
+#[derive(Parser)]
+pub struct Cli {
+    #[command(subcommand)]
+    pub command: Command,
 }
 
 fn parse_flag(s: &str) -> Result<Flag, String> {
@@ -60,7 +75,7 @@ fn parse_width(s: &str) -> Result<Size, String> {
                 return Err(format!(
                     "Your provided width doesn't fit into the integer (1-{})",
                     usize::MAX
-                ))
+                ));
             }
             _ => {}
         },

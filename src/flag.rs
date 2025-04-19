@@ -41,7 +41,6 @@ macro_rules! flags {
         ),* $(,)?
     ) => {
         use std::str::FromStr;
-
         #[derive(Clone, Copy)]
         pub enum Flag {
             $($key,)*
@@ -63,6 +62,15 @@ macro_rules! flags {
         }
 
         impl Flag {
+            pub const VALUES: &[(&'static str, &[&'static str])] = &[
+                $(
+                    (
+                        stringify!($key),
+                        &[$(stringify!($alt),)*]
+                    ),
+                )*
+            ];
+
             #[inline]
             pub fn stripes(&self) -> Vec<Stripe> {
                 match self {
