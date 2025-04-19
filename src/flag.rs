@@ -1,6 +1,8 @@
+use std::num::NonZero;
+
 use crate::{
     color::{AnsiCode, AnsiColor, Color},
-    overlay::{Overlay, new_overlays},
+    overlay::{Overlay, triangle::Triangle},
 };
 
 pub struct FallbackedColor {
@@ -172,17 +174,39 @@ flags! {
 }
 
 impl Flag {
-    pub fn overlays(&self) -> Vec<Overlay<Color, Color>> {
+    pub fn overlays(&self, slope: NonZero<usize>) -> Vec<Box<dyn Overlay<Foreground = Color>>> {
         match self {
-            Self::Lgbtqia => new_overlays(&[
-                (Color::new(253, 216, 23), 2, 0),
-                (Color::WHITE, 0, 1),
-                (Color::new(244, 174, 200), 0, 5),
-                (Color::new(123, 204, 229), 0, 9),
-                (Color::new(148, 85, 22), 0, 13),
-                (Color::BLACK, 0, 17),
-            ]),
-            Self::Demisexual => vec![Overlay::new(None, 0, 0, Color::BLACK)],
+            Self::Lgbtqia => {
+                let base_padding = 0;
+                let colors = [
+                    Color::WHITE,
+                    Color::new(244, 174, 200),
+                    Color::new(123, 204, 229),
+                    Color::new(148, 85, 22),
+                    Color::BLACK,
+                ];
+
+                let mut res: Vec<Box<dyn Overlay<Foreground = Color>>> =
+                    Vec::with_capacity(colors.len() + 1);
+                res.push(Box::new(Triangle::new(
+                    2 + base_padding,
+                    0,
+                    slope,
+                    Color::new(253, 216, 23),
+                )));
+
+                for (i, &color) in colors.iter().enumerate() {
+                    res.push(Box::new(Triangle::new(
+                        base_padding,
+                        1 + 4 * i,
+                        slope,
+                        color,
+                    )));
+                }
+
+                res
+            }
+            Self::Demisexual => vec![Box::new(Triangle::new(0, 0, slope, Color::BLACK))],
             _ => Vec::new(),
         }
     }

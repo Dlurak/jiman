@@ -1,7 +1,57 @@
-pub enum TriangleChar {
+use std::num::NonZero;
+
+use crate::color::Color;
+
+use super::{Overlay, Size};
+
+pub struct Triangle {
+    padding: usize,
+    insert: usize,
+    slope: NonZero<usize>,
+    color: Color,
+}
+
+impl Triangle {
+    pub fn new(padding: usize, insert: usize, slope: NonZero<usize>, color: Color) -> Self {
+        Self {
+            padding,
+            insert,
+            slope,
+            color,
+        }
+    }
+}
+
+impl Overlay for Triangle {
+    type Foreground = Color;
+
+    fn foreground(&self) -> Self::Foreground {
+        self.color
+    }
+
+    fn at_pos(&self, col: usize, row: usize, size: Size) -> Option<char> {
+        let padding = self.padding;
+
+        if !(padding..size.height.saturating_sub(padding)).contains(&row) {
+            return None;
+        }
+
+        TriangleChar::at_pos(
+            size.height - padding * 2,
+            self.slope,
+            (col, row - padding),
+            self.insert,
+        )
+        .map(char::from)
+    }
+}
+
+enum TriangleChar {
     Fill = '█' as isize,
     UpperDiagonal = '▙' as isize,
+    // UpperDiagonal = '🭀' as isize,
     LowerDiagonal = '▛' as isize,
+    // LowerDiagonal = '🭛' as isize,
     CenterHalf = '▌' as isize,
 }
 
@@ -36,7 +86,12 @@ impl From<Region> for TriangleChar {
 type Coord = (usize, usize);
 
 impl TriangleChar {
-    pub fn at_pos(height: usize, change: usize, (col, row): Coord, insert: usize) -> Option<Self> {
+    pub fn at_pos(
+        height: usize,
+        slope: NonZero<usize>,
+        (col, row): Coord,
+        insert: usize,
+    ) -> Option<Self> {
         let region = Region::at_pos(height, row);
         let actual_row = if let Region::Bottom = region {
             height - row - 1
@@ -44,7 +99,7 @@ impl TriangleChar {
             row
         };
 
-        let filler_width = actual_row * change + insert;
+        let filler_width = actual_row * slope.get() + insert;
         if (filler_width + 1) == col + 1 {
             Some(region.into())
         } else if col < filler_width {

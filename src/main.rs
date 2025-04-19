@@ -3,7 +3,7 @@ use jiman::{
     cli::{Cli, Command, PrintCli},
     color::{AnsiCode, RESET},
     flag::Flag,
-    triangle,
+    overlay::Size,
 };
 use std::fmt::Write;
 
@@ -43,35 +43,35 @@ fn print_handler(cli: PrintCli) {
     let stripe_height = height / stripes.len();
     let height = stripe_height * stripes.len();
 
-    let overlays = cli.flag.overlays();
+    let overlays = cli.flag.overlays(cli.triangle_angle);
 
     for y in 0..height {
         let stripe = &stripes[y / stripe_height];
         let line = (0..width).fold(String::new(), |mut line, x| {
-            let Some((tr, overlay)) = overlays.iter().find_map(|o| {
-                if !(o.padding..height - o.padding).contains(&y) {
-                    return None;
-                }
-                let tr = triangle::TriangleChar::at_pos(
-                    height - o.padding * 2,
-                    cli.triangle_angle.get(),
-                    (x, y - o.padding),
-                    o.insert,
-                )?;
-                Some((tr, o))
+            let Some((index, overlay, ch)) = overlays.iter().enumerate().find_map(|(i, ov)| {
+                let char = ov.at_pos(x, y, Size::new(height, width))?;
+                Some((i, ov, char))
             }) else {
                 return match write!(line, "{} ", stripe.bg()) {
                     Ok(_) => line,
                     Err(_) => format!("{line}{} ", stripe.bg()),
                 };
             };
-            let fg = overlay.fg.fg();
-            let bg = overlay.bg.map(|bg| bg.bg()).unwrap_or_else(|| stripe.bg());
-            let c = char::from(tr);
+            let fg = overlay.foreground().fg();
+            let bg = overlays
+                .iter()
+                .skip(index + 1)
+                .find_map(|overlay| {
+                    overlay
+                        .at_pos(x, y, Size::new(height, width))
+                        .is_some()
+                        .then(|| overlay.foreground().bg())
+                })
+                .unwrap_or_else(|| stripe.bg());
 
-            match write!(line, "{bg}{fg}{c}") {
+            match write!(line, "{bg}{fg}{ch}") {
                 Ok(_) => line,
-                Err(_) => format!("{line}{bg}{fg}{c}"),
+                Err(_) => format!("{line}{bg}{fg}{ch}"),
             }
         });
         println!("{line}{RESET}");
