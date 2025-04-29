@@ -8,6 +8,7 @@ use std::{
 #[derive(Subcommand, Clone)]
 pub enum Command {
     Print(PrintCli),
+    #[command(alias = "ls", alias = "l")]
     List {
         #[arg(long, default_value_t = false)]
         aliases: bool,

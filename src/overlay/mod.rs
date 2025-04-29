@@ -1,3 +1,4 @@
+pub mod charachter;
 pub mod triangle;
 
 use crate::color::AnsiCode;
@@ -10,6 +11,7 @@ pub trait Overlay {
     fn at_pos(&self, col: usize, row: usize, size: Size) -> Option<char>;
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct Size {
     pub height: usize,
     pub width: usize,

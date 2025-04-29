@@ -42,37 +42,30 @@ fn print_handler(cli: PrintCli) {
     let stripes = cli.flag.stripes();
     let stripe_height = height / stripes.len();
     let height = stripe_height * stripes.len();
+    let size = Size::new(height, width);
 
-    let overlays = cli.flag.overlays(cli.triangle_angle);
+    let overlays = cli.flag.overlays(cli.triangle_angle, size);
 
     for y in 0..height {
         let stripe = &stripes[y / stripe_height];
         let line = (0..width).fold(String::new(), |mut line, x| {
             let Some((index, overlay, ch)) = overlays.iter().enumerate().find_map(|(i, ov)| {
-                let char = ov.at_pos(x, y, Size::new(height, width))?;
+                let char = ov.at_pos(x, y, size)?;
                 Some((i, ov, char))
             }) else {
-                return match write!(line, "{} ", stripe.bg()) {
-                    Ok(_) => line,
-                    Err(_) => format!("{line}{} ", stripe.bg()),
-                };
+                write!(line, "{} ", stripe.bg()).expect("Writing to a String can't fail");
+                return line;
             };
             let fg = overlay.foreground().fg();
             let bg = overlays
                 .iter()
                 .skip(index + 1)
-                .find_map(|overlay| {
-                    overlay
-                        .at_pos(x, y, Size::new(height, width))
-                        .is_some()
-                        .then(|| overlay.foreground().bg())
-                })
+                .find(|overlay| overlay.at_pos(x, y, size).is_some())
+                .map(|overlay| overlay.foreground().bg())
                 .unwrap_or_else(|| stripe.bg());
 
-            match write!(line, "{bg}{fg}{ch}") {
-                Ok(_) => line,
-                Err(_) => format!("{line}{bg}{fg}{ch}"),
-            }
+            write!(line, "{bg}{fg}{ch}").expect("Writing to a String can't fail");
+            line
         });
         println!("{line}{RESET}");
     }

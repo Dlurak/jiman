@@ -2,7 +2,7 @@ use std::num::NonZero;
 
 use crate::{
     color::{AnsiCode, AnsiColor, Color},
-    overlay::{Overlay, triangle::Triangle},
+    overlay::{Overlay, Size, charachter::OverlayCharachter, triangle::Triangle},
 };
 
 pub struct FallbackedColor {
@@ -107,6 +107,26 @@ flags! {
         (Color::new(0, 77, 255), AnsiColor::Blue),
         (Color::new(117, 7, 135), AnsiColor::Magenta)
     ],
+    Asexual | "Ace" => [
+        (Color::BLACK, AnsiColor::Black),
+        (Color::gray(163), AnsiColor::Black),
+        (Color::WHITE, AnsiColor::White),
+        (Color::new(128, 0, 128), AnsiColor::Magenta),
+    ],
+    Aromantic | "Aro" => [
+        (Color::new(62, 167,68), AnsiColor::Green),
+        (Color::new(169, 212, 120), AnsiColor::Green),
+        (Color::WHITE, AnsiColor::White),
+        (Color::gray(170), AnsiColor::Black),
+        (Color::BLACK, AnsiColor::Black),
+    ],
+    Aroace => [
+        (Color::new(227, 140, 1), AnsiColor::Red),
+        (Color::new(236, 205, 0), AnsiColor::Yellow),
+        (Color::WHITE, AnsiColor::White),
+        (Color::new(98, 175, 222), AnsiColor::Cyan),
+        (Color::new(32, 56, 87), AnsiColor::Blue),
+    ],
     Bisexual | "Bi" => [
         (Color::new(214, 2, 122), AnsiColor::Magenta),
         (Color::new(214, 2, 122), AnsiColor::Magenta),
@@ -123,19 +143,6 @@ flags! {
         (Color::new(255, 33, 140), AnsiColor::Magenta),
         (Color::new(255, 216, 0), AnsiColor::Yellow),
         (Color::new(33, 177, 255), AnsiColor::Cyan),
-    ],
-    Asexual | "Ace" => [
-        (Color::BLACK, AnsiColor::Black),
-        (Color::gray(163), AnsiColor::Black),
-        (Color::WHITE, AnsiColor::White),
-        (Color::new(128, 0, 128), AnsiColor::Magenta),
-    ],
-    Aromantic | "Aro" => [
-        (Color::new(62, 167,68), AnsiColor::Green),
-        (Color::new(169, 212, 120), AnsiColor::Green),
-        (Color::WHITE, AnsiColor::White),
-        (Color::gray(170), AnsiColor::Black),
-        (Color::BLACK, AnsiColor::Black),
     ],
     Lesbian => [
         (Color::new(214, 44,0), AnsiColor::Red),
@@ -171,13 +178,25 @@ flags! {
         (Color::new( 156, 89, 209), AnsiColor::Magenta),
         (Color::gray(44), AnsiColor::Black),
     ],
+    Polyamory => [
+        (Color::new(0, 0, 255), AnsiColor::Blue),
+        (Color::new(255, 0, 0), AnsiColor::Red),
+        (Color::BLACK, AnsiColor::Black),
+    ],
 }
 
 impl Flag {
-    pub fn overlays(&self, slope: NonZero<usize>) -> Vec<Box<dyn Overlay<Foreground = Color>>> {
+    pub fn overlays(
+        &self,
+        slope: NonZero<usize>,
+        size: Size,
+    ) -> Vec<Box<dyn Overlay<Foreground = Color>>> {
         match self {
             Self::Lgbtqia => {
-                let base_padding = 0;
+                // How far the triangles should be inserted
+                // Usefull for making space for the intersex circle
+                let insert = 0;
+
                 let colors = [
                     Color::WHITE,
                     Color::new(244, 174, 200),
@@ -188,25 +207,26 @@ impl Flag {
 
                 let mut res: Vec<Box<dyn Overlay<Foreground = Color>>> =
                     Vec::with_capacity(colors.len() + 1);
+
                 res.push(Box::new(Triangle::new(
-                    2 + base_padding,
-                    0,
+                    2,
+                    insert,
                     slope,
                     Color::new(253, 216, 23),
                 )));
 
                 for (i, &color) in colors.iter().enumerate() {
-                    res.push(Box::new(Triangle::new(
-                        base_padding,
-                        1 + 4 * i,
-                        slope,
-                        color,
-                    )));
+                    res.push(Box::new(Triangle::new(0, insert + 1 + 4 * i, slope, color)));
                 }
 
                 res
             }
             Self::Demisexual => vec![Box::new(Triangle::new(0, 0, slope, Color::BLACK))],
+            Self::Polyamory => vec![Box::new(OverlayCharachter::new_centered(
+                'π',
+                Color::new(255, 255, 0),
+                size,
+            ))],
             _ => Vec::new(),
         }
     }

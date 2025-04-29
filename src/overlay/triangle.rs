@@ -46,13 +46,14 @@ impl Overlay for Triangle {
     }
 }
 
+#[repr(u16)]
 enum TriangleChar {
-    Fill = '█' as isize,
-    UpperDiagonal = '▙' as isize,
-    // UpperDiagonal = '🭀' as isize,
-    LowerDiagonal = '▛' as isize,
-    // LowerDiagonal = '🭛' as isize,
-    CenterHalf = '▌' as isize,
+    Fill = '█' as u16,
+    UpperDiagonal = '▙' as u16,
+    // UpperDiagonal = '🭀' as u16,
+    LowerDiagonal = '▛' as u16,
+    // LowerDiagonal = '🭛' as u16,
+    CenterHalf = '▌' as u16,
 }
 
 enum Region {
