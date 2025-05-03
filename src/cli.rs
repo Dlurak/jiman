@@ -1,28 +1,47 @@
 use crate::flag::Flag;
 use clap::{Parser, Subcommand};
-use std::{
-    num::{IntErrorKind, NonZero},
-    str::FromStr,
-};
+use std::num::{IntErrorKind, NonZero};
 
 #[derive(Subcommand, Clone)]
 pub enum Command {
+    /// Print a pride flag
     Print(PrintCli),
     #[command(alias = "ls", alias = "l")]
+    /// List all available flags
     List {
+        /// Show aliases
         #[arg(long, default_value_t = false)]
         aliases: bool,
+    },
+    /// Output shell completion scripts to stdout, usefull for package maintainers!
+    #[command(hide = true)]
+    Complete {
+        /// Name of the shell
+        shell: clap_complete::Shell,
     },
 }
 
 #[derive(Parser, Clone)]
 pub struct PrintCli {
-    #[arg(value_parser = parse_flag)]
+    /// The name (or alias) of the flag to output
+    #[arg(value_enum)]
     pub flag: Flag,
-    #[arg(short, long, value_parser = parse_width)]
+    #[arg(
+        short,
+		long,
+		value_parser = parse_width,
+		help = "The width of the flag",
+		long_help = "The width of the flag, either an absolute length (charachters) or percentages of the terminal width"
+    )]
     pub width: Option<Size>,
-    #[arg(long, value_parser = parse_width)]
+    #[arg(
+        long,
+        value_parser = parse_width,
+		help = "The height of the flag",
+		long_help = "The height of the flag, either an absolute length (charachters) or percentages of the terminal height"
+    )]
     pub height: Option<Size>,
+    /// The angle of the triangle on the side present on some flags
     #[arg(long, alias = "angle", default_value_t = unsafe{ NonZero::new_unchecked(1) })]
     pub triangle_angle: NonZero<usize>,
 }
@@ -31,10 +50,6 @@ pub struct PrintCli {
 pub struct Cli {
     #[command(subcommand)]
     pub command: Command,
-}
-
-fn parse_flag(s: &str) -> Result<Flag, String> {
-    Flag::from_str(s).map_err(|_| format!("\"{s}\" isn't a recognized flag, if it should be available please consider opening a pr :)"))
 }
 
 #[derive(Clone)]

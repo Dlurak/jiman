@@ -13,16 +13,7 @@
       system: let
         pkgs = import nixpkgs {inherit system;};
       in {
-        defaultPackage = let
-          manifest = pkgs.lib.importTOML ./Cargo.toml;
-        in
-          pkgs.rustPlatform.buildRustPackage {
-            pname = manifest.package.name;
-            version = manifest.package.version;
-
-            src = pkgs.lib.cleanSource ./.;
-            cargoLock.lockFile = ./Cargo.lock;
-          };
+        defaultPackage = import ./nix/package.nix {inherit pkgs;};
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
             cargo

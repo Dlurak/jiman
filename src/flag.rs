@@ -40,29 +40,38 @@ impl FallbackedColor {
 macro_rules! flags {
     (
         $(
-            $key:ident $( | $alt:pat )? => [
+            $key:ident $(| $alt:expr)* => [
                 $( ($color:expr, $ansi:expr) ),+ $(,)?
             ]
         ),* $(,)?
     ) => {
-        use std::str::FromStr;
+        use clap::{ValueEnum, builder::PossibleValue};
+
         #[derive(Clone, Copy)]
         pub enum Flag {
             $($key,)*
         }
 
-        impl FromStr for Flag {
-            type Err = ();
-            fn from_str(s: &str) -> Result<Self, Self::Err> {
-                let mut c = s.chars();
-                let f = c.next().ok_or(())?;
-                let serialized = f.to_uppercase().collect::<String>() + c.as_str();
-                match serialized.as_str() {
+        impl ValueEnum for Flag {
+            fn value_variants<'a>() -> &'a [Self] {
+                &[$(Self::$key,)*]
+            }
+
+            fn to_possible_value(&self) -> Option<PossibleValue> {
+                Some(match self {
                     $(
-                        stringify!($key) $( | $alt )* => Ok(Self::$key),
+                        Self::$key => {
+                            PossibleValue::new(stringify!($key).to_lowercase())
+                                .aliases([
+                                    String::from(stringify!($key)),
+                                    $(
+                                        $alt.into(),
+                                        $alt.to_lowercase(),
+                                    )*
+                                ])
+                        },
                     )*
-                    _ => Err(())
-                }
+                })
             }
         }
 
@@ -71,7 +80,7 @@ macro_rules! flags {
                 $(
                     (
                         stringify!($key),
-                        &[$(stringify!($alt),)*]
+                        &[$($alt,)*]
                     ),
                 )*
             ];
