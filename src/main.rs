@@ -1,5 +1,4 @@
-use clap::{CommandFactory, Parser};
-use clap_complete::generate;
+use clap::Parser;
 use jiman::{
     cli::{Cli, Command, PrintCli},
     color::{AnsiCode, RESET},
@@ -26,9 +25,12 @@ fn main() {
             }
         }
         Command::Print(cli) => print_handler(cli),
+        #[cfg(feature = "complete")]
         Command::Complete { shell } => {
+            use clap::CommandFactory;
+
             let mut cmd = Cli::command();
-            generate(shell, &mut cmd, "jiman", &mut std::io::stdout());
+            clap_complete::generate(shell, &mut cmd, "jiman", &mut std::io::stdout());
         }
     }
 }

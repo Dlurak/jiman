@@ -14,6 +14,7 @@ pub enum Command {
         aliases: bool,
     },
     /// Output shell completion scripts to stdout, usefull for package maintainers!
+    #[cfg(feature = "complete")]
     #[command(hide = true)]
     Complete {
         /// Name of the shell
