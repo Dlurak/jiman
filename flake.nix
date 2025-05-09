@@ -1,20 +1,30 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    utils,
-  }:
-    utils.lib.eachDefaultSystem (
-      system: let
-        pkgs = import nixpkgs {inherit system;};
-      in {
-        defaultPackage = import ./nix/package.nix {inherit pkgs;};
-        devShell = pkgs.mkShell {
+  outputs =
+    {
+      self,
+      nixpkgs,
+    }:
+    let
+      forAllSystems =
+        function:
+        nixpkgs.lib.genAttrs [ "aarch64-darwin" "aarch64-linux" "x86_64-darwin" "x86_64-linux" ] (
+          system: function nixpkgs.legacyPackages.${system}
+        );
+    in
+    {
+      formatter = forAllSystems (pkgs: pkgs.nixfmt-tree);
+
+      packages = forAllSystems (pkgs: rec {
+        jiman = import ./nix/package.nix { inherit pkgs; };
+        default = jiman;
+      });
+
+      devShells = forAllSystems (pkgs: {
+        default = pkgs.mkShell {
           buildInputs = with pkgs; [
             cargo
             rustc
@@ -24,6 +34,6 @@
           ];
           RUST_SRC_PATH = pkgs.rustPlatform.rustLibSrc;
         };
-      }
-    );
+      });
+    };
 }
