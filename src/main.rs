@@ -16,10 +16,10 @@ fn main() {
                 let alts = (aliases && !alts.is_empty()).then(|| alts.join(", "));
                 match alts {
                     Some(alts) => {
-                        println!("{} ({alts})", variant);
+                        println!("{variant} ({alts})");
                     }
                     None => {
-                        println!("{}", variant);
+                        println!("{variant}");
                     }
                 }
             }
@@ -36,11 +36,17 @@ fn main() {
 }
 
 fn print_handler(cli: PrintCli) {
-    let width = match cli.width {
-        Some(w) => w.absolute_width().map(|v| v.get()),
-        None => term_size::dimensions_stdout().map(|(w, _)| w.min(70)),
-    };
-    let width = width.unwrap_or(70);
+    let width = cli
+        .width
+        .clone()
+        .and_then(|w| w.absolute_width())
+        .map(|w| w.get())
+        .or_else(|| {
+            let (wid, _) = term_size::dimensions_stdout()?;
+            Some(wid.min(70))
+        })
+        .unwrap_or(70);
+
     let height = cli
         .height
         .and_then(|h| h.absolute_height())
@@ -68,8 +74,7 @@ fn print_handler(cli: PrintCli) {
                 .iter()
                 .skip(index + 1)
                 .find(|overlay| overlay.at_pos(x, y, size).is_some())
-                .map(|overlay| overlay.foreground().bg())
-                .unwrap_or_else(|| stripe.bg());
+                .map_or_else(|| stripe.bg(), |overlay| overlay.foreground().bg());
 
             write!(line, "{bg}{fg}{ch}").expect("Writing to a String can't fail");
             line

@@ -32,6 +32,7 @@ impl AnsiCode for Color {
 }
 
 #[derive(Clone, Copy)]
+#[repr(u8)]
 pub enum AnsiColor {
     Black = 30,
     Red = 31,

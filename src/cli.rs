@@ -66,7 +66,7 @@ impl Size {
             Self::Percentage(perc) => {
                 let (w, _) = term_size::dimensions_stdout()?;
                 let w = w as f32;
-                let perc = perc.get() as f32;
+                let perc = f32::from(perc.get());
                 NonZero::new((w / 100.0 * perc) as usize)
             }
         }
@@ -77,7 +77,7 @@ impl Size {
             Self::Percentage(perc) => {
                 let (_, h) = term_size::dimensions_stdout()?;
                 let h = h as f32;
-                let perc = perc.get() as f32;
+                let perc = f32::from(perc.get());
                 NonZero::new((h / 100.0 * perc) as usize)
             }
         }
@@ -117,9 +117,8 @@ fn parse_width(s: &str) -> Result<Size, String> {
         }
         Err(err) => {
             let msg = match err.kind() {
-                IntErrorKind::Zero => "The width must be at least 1%",
+                IntErrorKind::Zero | IntErrorKind::NegOverflow => "The width must be at least 1%",
                 IntErrorKind::Empty | IntErrorKind::InvalidDigit => "Please provide a number",
-                IntErrorKind::NegOverflow => "The width must be at least 1%",
                 IntErrorKind::PosOverflow => "The width must not exceed 100%",
                 _ => todo!("This is a bug, please create a GitHub issue to report it!"),
             };

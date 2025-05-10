@@ -12,7 +12,7 @@ pub struct Triangle {
 }
 
 impl Triangle {
-    pub fn new(padding: usize, insert: usize, slope: NonZero<usize>, color: Color) -> Self {
+    pub const fn new(padding: usize, insert: usize, slope: NonZero<usize>, color: Color) -> Self {
         Self {
             padding,
             insert,
@@ -63,7 +63,7 @@ enum Region {
 }
 
 impl Region {
-    fn at_pos(height: usize, row: usize) -> Self {
+    const fn at_pos(height: usize, row: usize) -> Self {
         if height % 2 == 1 && height / 2 == row {
             Self::Center
         } else if height / 2 <= row {
@@ -77,9 +77,9 @@ impl Region {
 impl From<Region> for TriangleChar {
     fn from(value: Region) -> Self {
         match value {
-            Region::Top => TriangleChar::UpperDiagonal,
-            Region::Center => TriangleChar::CenterHalf,
-            Region::Bottom => TriangleChar::LowerDiagonal,
+            Region::Top => Self::UpperDiagonal,
+            Region::Center => Self::CenterHalf,
+            Region::Bottom => Self::LowerDiagonal,
         }
     }
 }
@@ -94,7 +94,7 @@ impl TriangleChar {
         insert: usize,
     ) -> Option<Self> {
         let region = Region::at_pos(height, row);
-        let actual_row = if let Region::Bottom = region {
+        let actual_row = if matches!(region, Region::Bottom) {
             height - row - 1
         } else {
             row
@@ -104,7 +104,7 @@ impl TriangleChar {
         if (filler_width + 1) == col + 1 {
             Some(region.into())
         } else if col < filler_width {
-            Some(TriangleChar::Fill)
+            Some(Self::Fill)
         } else {
             None
         }
@@ -113,6 +113,6 @@ impl TriangleChar {
 
 impl From<TriangleChar> for char {
     fn from(value: TriangleChar) -> Self {
-        unsafe { char::from_u32_unchecked(value as u32) }
+        unsafe { Self::from_u32_unchecked(value as u32) }
     }
 }

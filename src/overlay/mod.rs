@@ -18,7 +18,7 @@ pub struct Size {
 }
 
 impl Size {
-    pub fn new(height: usize, width: usize) -> Self {
+    pub const fn new(height: usize, width: usize) -> Self {
         Self { height, width }
     }
 }

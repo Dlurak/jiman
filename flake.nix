@@ -31,6 +31,7 @@
             rustfmt
             rustPackages.clippy
             bacon
+            rust-analyzer
           ];
           RUST_SRC_PATH = pkgs.rustPlatform.rustLibSrc;
         };

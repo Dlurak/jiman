@@ -8,7 +8,7 @@ pub struct OverlayCharachter {
 }
 
 impl OverlayCharachter {
-    pub fn new_centered(char: char, color: Color, size: super::Size) -> Self {
+    pub const fn new_centered(char: char, color: Color, size: super::Size) -> Self {
         Self {
             char,
             color,

@@ -29,7 +29,7 @@ impl AnsiCode for FallbackedColor {
 }
 
 impl FallbackedColor {
-    fn new(ideal: Color, fallback: AnsiColor) -> Self {
+    const fn new(ideal: Color, fallback: AnsiColor) -> Self {
         Self {
             true_color: ideal,
             ansi_color: fallback,
@@ -167,10 +167,17 @@ flags! {
         (Color::new(123, 173, 226), AnsiColor::Cyan),
         (Color::new(61, 26, 120), AnsiColor::Blue),
     ],
-    Demisexual | "Demi" => [
+    Demisexual => [
         (Color::WHITE, AnsiColor::White),
         (Color::WHITE, AnsiColor::White),
         (Color::new(128, 0, 128), AnsiColor::Magenta),
+        (Color::gray(210), AnsiColor::Black),
+        (Color::gray(210), AnsiColor::Black),
+    ],
+    Demiromantic => [
+        (Color::WHITE, AnsiColor::White),
+        (Color::WHITE, AnsiColor::White),
+        (Color::new(51,  138, 55), AnsiColor::Green),
         (Color::gray(210), AnsiColor::Black),
         (Color::gray(210), AnsiColor::Black),
     ],
@@ -191,6 +198,24 @@ flags! {
         (Color::new(0, 0, 255), AnsiColor::Blue),
         (Color::new(255, 0, 0), AnsiColor::Red),
         (Color::BLACK, AnsiColor::Black),
+    ],
+    Demigirl => [
+        (Color::gray(127), AnsiColor::Black),
+        (Color::gray(196), AnsiColor::White),
+        (Color::new(255,174,201), AnsiColor::Magenta),
+        (Color::WHITE, AnsiColor::White),
+        (Color::new(255,174,201), AnsiColor::Magenta),
+        (Color::gray(196), AnsiColor::White),
+        (Color::gray(127), AnsiColor::Black),
+    ],
+    Demiboy => [
+        (Color::gray(127), AnsiColor::Black),
+        (Color::gray(196), AnsiColor::White),
+        (Color::new(193,217,235), AnsiColor::Cyan),
+        (Color::WHITE, AnsiColor::White),
+        (Color::new(193,217,235), AnsiColor::Cyan),
+        (Color::gray(196), AnsiColor::White),
+        (Color::gray(127), AnsiColor::Black),
     ],
 }
 
@@ -230,7 +255,9 @@ impl Flag {
 
                 res
             }
-            Self::Demisexual => vec![Box::new(Triangle::new(0, 0, slope, Color::BLACK))],
+            Self::Demisexual | Self::Demiromantic => {
+                vec![Box::new(Triangle::new(0, 0, slope, Color::BLACK))]
+            }
             Self::Polyamory => vec![Box::new(OverlayCharachter::new_centered(
                 'π',
                 Color::new(255, 255, 0),
