@@ -1,4 +1,5 @@
 pub mod charachter;
+pub mod circle;
 pub mod triangle;
 
 use crate::color::AnsiCode;
@@ -21,4 +22,10 @@ impl Size {
     pub const fn new(height: usize, width: usize) -> Self {
         Self { height, width }
     }
+
+    pub const fn center(&self) -> (usize, usize) {
+        (self.width / 2, self.height / 2)
+    }
 }
+
+pub type Coord = (usize, usize);

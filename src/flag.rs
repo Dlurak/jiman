@@ -2,7 +2,8 @@ use std::num::NonZero;
 
 use crate::{
     color::{AnsiCode, AnsiColor, Color},
-    overlay::{Overlay, Size, charachter::OverlayCharachter, triangle::Triangle},
+    odd::Odd,
+    overlay::{Overlay, Size, charachter::OverlayCharachter, circle::Circle, triangle::Triangle},
 };
 
 pub struct FallbackedColor {
@@ -217,6 +218,9 @@ flags! {
         (Color::gray(196), AnsiColor::White),
         (Color::gray(127), AnsiColor::Black),
     ],
+    Intersex | "Inter" => [
+        (Color::new(252, 219, 4), AnsiColor::Yellow),
+    ]
 }
 
 impl Flag {
@@ -227,9 +231,11 @@ impl Flag {
     ) -> Vec<Box<dyn Overlay<Foreground = Color>>> {
         match self {
             Self::Lgbtqia => {
-                // How far the triangles should be inserted
-                // Usefull for making space for the intersex circle
-                let insert = 0;
+                let basis = size.height / 3;
+                let diameter =
+                    Odd::<usize>::new(basis).unwrap_or_else(|| Odd::<usize>::new_panics(basis + 1));
+
+                let insert = (diameter.value() as f32 * 1.5) as usize;
 
                 let colors = [
                     Color::WHITE,
@@ -240,17 +246,32 @@ impl Flag {
                 ];
 
                 let mut res: Vec<Box<dyn Overlay<Foreground = Color>>> =
-                    Vec::with_capacity(colors.len() + 1);
+                    Vec::with_capacity(colors.len() + 2);
+
+                res.push(Box::new(Circle::new(
+                    (
+                        // (diameter.value() as f32 * 0.75) as usize + 2,
+                        (insert as f32 * 0.75) as usize,
+                        size.height / 2,
+                    ),
+                    diameter,
+                    Color::new(137, 42, 136),
+                )));
 
                 res.push(Box::new(Triangle::new(
-                    2,
+                    0,
                     insert,
                     slope,
                     Color::new(253, 216, 23),
                 )));
 
                 for (i, &color) in colors.iter().enumerate() {
-                    res.push(Box::new(Triangle::new(0, insert + 1 + 4 * i, slope, color)));
+                    res.push(Box::new(Triangle::new(
+                        0,
+                        insert + 3 * (i + 1),
+                        slope,
+                        color,
+                    )));
                 }
 
                 res
@@ -263,6 +284,16 @@ impl Flag {
                 Color::new(255, 255, 0),
                 size,
             ))],
+            Self::Intersex => {
+                let basis = size.height / 2;
+                let diameter = Odd::<usize>::new(basis);
+                let diameter = diameter.unwrap_or_else(|| Odd::<usize>::new_panics(basis + 1));
+                vec![Box::new(Circle::new(
+                    size.center(),
+                    diameter,
+                    Color::new(137, 42, 136),
+                ))]
+            }
             _ => Vec::new(),
         }
     }

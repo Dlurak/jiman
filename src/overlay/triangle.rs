@@ -1,8 +1,6 @@
-use std::num::NonZero;
-
+use super::{Coord, Overlay, Size};
 use crate::color::Color;
-
-use super::{Overlay, Size};
+use std::num::NonZero;
 
 pub struct Triangle {
     padding: usize,
@@ -83,8 +81,6 @@ impl From<Region> for TriangleChar {
         }
     }
 }
-
-type Coord = (usize, usize);
 
 impl TriangleChar {
     pub fn at_pos(

@@ -12,7 +12,7 @@ impl OverlayCharachter {
         Self {
             char,
             color,
-            coord: (size.width / 2, size.height / 2),
+            coord: size.center(),
         }
     }
 }

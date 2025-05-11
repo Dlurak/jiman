@@ -42,9 +42,9 @@ pub struct PrintCli {
 		long_help = "The height of the flag, either an absolute length (charachters) or percentages of the terminal height"
     )]
     pub height: Option<Size>,
-    /// The angle of the triangle on the side present on some flags
-    #[arg(long, alias = "angle", default_value_t = unsafe{ NonZero::new_unchecked(1) })]
-    pub triangle_angle: NonZero<usize>,
+    /// The slope of the triangle on the side present on some flags
+    #[arg(long, alias = "angle", alias = "triangle-angle", default_value_t = const { unsafe { NonZero::new_unchecked(1) }})]
+    pub slope: NonZero<usize>,
 }
 
 #[derive(Parser)]

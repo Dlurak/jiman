@@ -1,6 +1,7 @@
 pub mod cli;
 pub mod color;
 pub mod flag;
+pub mod odd;
 pub mod overlay;
 
 pub mod term {

@@ -43,21 +43,21 @@ fn print_handler(cli: PrintCli) {
         .map(|w| w.get())
         .or_else(|| {
             let (wid, _) = term_size::dimensions_stdout()?;
-            Some(wid.min(70))
+            Some(wid.min(71))
         })
-        .unwrap_or(70);
+        .unwrap_or(71);
 
     let height = cli
         .height
         .and_then(|h| h.absolute_height())
-        .map_or(16, |v| v.get());
+        .map_or(15, |v| v.get());
 
     let stripes = cli.flag.stripes();
     let stripe_height = height / stripes.len();
     let height = stripe_height * stripes.len();
     let size = Size::new(height, width);
 
-    let overlays = cli.flag.overlays(cli.triangle_angle, size);
+    let overlays = cli.flag.overlays(cli.slope, size);
 
     for y in 0..height {
         let stripe = &stripes[y / stripe_height];
